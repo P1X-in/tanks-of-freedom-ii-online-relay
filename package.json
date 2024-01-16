@@ -1,0 +1,14 @@
+{
+  "name": "tanks-of-freedom-ii-online-relay",
+  "version": "1.0.0",
+  "description": "Relay server for Tanks of Freedom II online play",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "CzlowiekImadlo",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.16.0"
+  }
+}
