@@ -51,15 +51,16 @@ let sessionsManager = {
         "player_data" : player_data
       }
     }
+    
     for (let other_peer_id in this.sessions[join_code].players) {
       if (other_peer_id != peer_id) {
-        this.sessions[key].players[other_peer_id].socket.send(JSON.stringify(response_json));
+        this.sessions[join_code].players[other_peer_id].socket.send(JSON.stringify(response_json));
 
         let other_player_data = {
           "action" : "player_joined",
           "payload" : {
             "peer_id" : other_peer_id,
-            "player_data" : this.sessions[key].players[other_peer_id].player_data
+            "player_data" : this.sessions[join_code].players[other_peer_id].player_data
           }
         }
         socket.send(JSON.stringify(other_player_data));
@@ -155,10 +156,22 @@ server.on('connection', function(socket) {
       let response_json = {
         "action" : "joined",
         "payload" : {
-          "peer_id" : sessionsManager.join_session(socket, msg_json.payload.join_code)
+          "peer_id" : sessionsManager.join_session(socket, msg_json.payload.join_code, msg_json.payload.player_data),
+          "in_progress" : sessionsManager.sessions[msg_json.payload.join_code]["settings"]["in_progress"],
+          "map_name" : sessionsManager.sessions[msg_json.payload.join_code]["settings"]["map_name"],
         }
       }
       socket.send(JSON.stringify(response_json))
+    }
+
+    if (msg_json.action == "game_start") {
+      let response_json = {
+        "action" : "game_start",
+        "payload" : msg_json.payload.message
+      }
+      for (let peer_id in sessionsManager.sessions[msg_json.payload.join_code].players) {
+        sessionsManager.sessions[msg_json.payload.join_code].players[peer_id].socket.send(JSON.stringify(response_json))
+      }
     }
 
     if (msg_json.action == "message_direct") {
