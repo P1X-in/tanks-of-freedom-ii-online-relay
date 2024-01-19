@@ -33,9 +33,15 @@ let sessionsManager = {
   },
 
   join_session : function(socket, join_code, player_data) {
-    if (!(join_code in this.sessions)) return 0;
+    if (!(join_code in this.sessions)) {
+      console.log("Bad code");
+      return 0;
+    }
 
-    if (Object.keys(this.sessions[join_code].players).length == this.sessions[join_code].settings.max_players) return 0;
+    if (Object.keys(this.sessions[join_code].players).length == this.sessions[join_code].settings.max_players) {
+      console.log("session full")
+      return 0;
+    }
 
     let peer_id = this.sessions[join_code].settings.iterator;
     this.sessions[join_code].players[peer_id] = {
@@ -153,21 +159,29 @@ server.on('connection', function(socket) {
     }
 
     if (msg_json.action == "join") {
+      let new_peer_id = sessionsManager.join_session(socket, msg_json.payload.join_code, msg_json.payload.player_data);
+      let in_progress = false;
+      let map_name = "";
+      if (new_peer_id > 0) {
+        in_progress = sessionsManager.sessions[msg_json.payload.join_code]["settings"]["in_progress"]
+        map_name = sessionsManager.sessions[msg_json.payload.join_code]["settings"]["map_name"]
+      }
       let response_json = {
         "action" : "joined",
         "payload" : {
-          "peer_id" : sessionsManager.join_session(socket, msg_json.payload.join_code, msg_json.payload.player_data),
-          "in_progress" : sessionsManager.sessions[msg_json.payload.join_code]["settings"]["in_progress"],
-          "map_name" : sessionsManager.sessions[msg_json.payload.join_code]["settings"]["map_name"],
+          "peer_id" : new_peer_id,
+          "in_progress" : in_progress,
+          "map_name" : map_name,
         }
       }
       socket.send(JSON.stringify(response_json))
     }
 
     if (msg_json.action == "game_start") {
+      sessionsManager.sessions[msg_json.payload.join_code]["settings"]["in_progress"] = true
       let response_json = {
         "action" : "game_start",
-        "payload" : msg_json.payload.message
+        "payload" : msg_json.payload
       }
       for (let peer_id in sessionsManager.sessions[msg_json.payload.join_code].players) {
         sessionsManager.sessions[msg_json.payload.join_code].players[peer_id].socket.send(JSON.stringify(response_json))
