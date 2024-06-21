@@ -1,6 +1,6 @@
 const WebSocket = require('ws')
 
-const port = 9939
+const port = 9959
 const server = new WebSocket.Server({ port: port })
 
 let gameState = []
@@ -57,7 +57,7 @@ let sessionsManager = {
         "player_data" : player_data
       }
     }
-    
+
     for (let other_peer_id in this.sessions[join_code].players) {
       if (other_peer_id != peer_id) {
         this.sessions[join_code].players[other_peer_id].socket.send(JSON.stringify(response_json));
@@ -125,12 +125,12 @@ let sessionsManager = {
       if ( n > max ) {
         return this._generate_code_chunk(max) + this._generate_code_chunk(n - max);
       }
-      
+
       max        = Math.pow(10, n+add);
       var min    = max/10;
       var number = Math.floor( Math.random() * (max - min + 1) ) + min;
-      
-      return ("" + number).substring(add); 
+
+      return ("" + number).substring(add);
   }
 };
 
